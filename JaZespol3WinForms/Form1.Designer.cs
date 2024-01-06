@@ -170,11 +170,11 @@
             // 
             label5.Anchor = AnchorStyles.None;
             label5.AutoSize = true;
-            label5.Location = new Point(272, 7);
+            label5.Location = new Point(271, 7);
             label5.Name = "label5";
-            label5.Size = new Size(79, 15);
+            label5.Size = new Size(82, 15);
             label5.TabIndex = 14;
-            label5.Text = "Select bitmap";
+            label5.Text = "Select bitmap:";
             // 
             // tableLayoutPanel1
             // 
