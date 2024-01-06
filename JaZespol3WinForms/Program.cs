@@ -16,9 +16,6 @@ namespace JaZespol3WinForms
         [STAThread]
         static void Main()
         {
-            _ = SobelAsm(new byte[36], new byte[9], 3, 3, 12, 90); // first time to load dll from drive
-            _ = SobelCpp(new byte[36], new byte[9], 3, 3, 12, 90); // first time to load dll from drive
-
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();

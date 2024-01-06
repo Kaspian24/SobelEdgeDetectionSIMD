@@ -28,6 +28,8 @@ namespace JaZespol3WinForms
                 return;
             }
 
+            ButtonRun.Enabled = false;
+
             result = (Bitmap)original.Clone();
 
             // Lock the bitmap's bits.
@@ -75,6 +77,8 @@ namespace JaZespol3WinForms
 
             label1.Text = watch.Elapsed.ToString(@"m\:ss\.fff") + " (" + method + ")";
             pictureBox2.Image = (Image)result;
+
+            ButtonRun.Enabled = true;
         }
 
         private void ButtonBrowse_Click(object sender, EventArgs e)
