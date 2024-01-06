@@ -43,21 +43,23 @@ mov r14, r9 ; set outer loop counter to height
 l1:
 	mov r15, r8 ; set inner loop counter to width
 	l1_0:
-		cmp r15, 16
+		cmp r15, 6 ; prevent overriding next line and reading memory outside of the array at last line
 		jl l1_0_end
 		vmovdqu xmm0, xmmword ptr [r12]
-		vpshufb xmm0, xmm0, xmm5
-		vpmaddubsw xmm0, xmm0, xmm4
-		vphaddw xmm0, xmm0, xmm5
-		vpmovzxwd xmm0, xmm0
-		vcvtdq2ps xmm0, xmm0
+		vpshufb xmm0, xmm0, xmm5 ; shuffle bytes to 4 groups of R, G, B, Placeholder
+		vpmaddubsw xmm0, xmm0, xmm4 ; R*1, G*1, B*1, Placeholder * 0
+									; => R+G, B+0
+									; => byte to word
+		vphaddw xmm0, xmm0, xmm5 ; R+G+B+0
+		vpmovzxwd xmm0, xmm0 ; word to double word
+		vcvtdq2ps xmm0, xmm0 ; double word to single precision (no instruction for dividing integers)
 
-		vdivps xmm0, xmm0, xmm3
+		vdivps xmm0, xmm0, xmm3 ; (R+G+B)/3
 
-		vcvttps2dq xmm0, xmm0
+		vcvttps2dq xmm0, xmm0 ; single precision to double word, rounded down
 
-		vpackusdw xmm0, xmm0, xmm0
-		vpackuswb xmm0, xmm0, xmm0
+		vpackusdw xmm0, xmm0, xmm0 ; double word to word
+		vpackuswb xmm0, xmm0, xmm0 ; word to byte
 
 		vmovd dword ptr [r13], xmm0
 
@@ -74,7 +76,7 @@ l1:
 	l1_1:
 		movzx eax, byte ptr [r12]
 		movzx ecx, byte ptr [r12+1]
-		add eax, ecx
+		add eax, ecx ; rax = R+G
 		movzx ecx, byte ptr [r12+2]
 		add eax, ecx ; rax = R+G+B
 
@@ -124,13 +126,15 @@ l2:
 		vmovd xmm0, dword ptr [r13]
 		vpinsrd xmm0, xmm0, dword ptr [r13+r10], 1
 		vpinsrd xmm0, xmm0, dword ptr [r13+2*r10-1], 2
-		vpshufb xmm0, xmm0, xmm4
+		vpshufb xmm0, xmm0, xmm4 ; place 8 bytes in correct order and copy them to upper part of register
 
-		vpmaddubsw xmm0, xmm0, xmm3 ; xmm1 = MatrixA * MatrixY => xmm1 = y0+y1, y2+y3, y4+y5, y6+y7 => byte to word
-		vphaddw xmm0, xmm0, xmm5 ; (y0+y1) + (y2+y3), (y4+y5) + (y6+y7)
+		vpmaddubsw xmm0, xmm0, xmm3 ; xmm0(low) = MatrixA * MatrixX, xmm0(high) = MatrixA * MatrixY
+									; => xmm0(low) = x0+x1, x2+x3, x4+x5, x6+x7, xmm0(high) = y0+y1, y2+y3, y4+y5, y6+y7
+									; => byte to word
+		vphaddw xmm0, xmm0, xmm5 ; add horizontal pairs
 		vpmovsxwd xmm0, xmm0 ; word to double word
-		vphaddd xmm0, xmm0, xmm5 ; Gy = ((y0+y1) + (y2+y3)) + ((y4+y5) + (y6+y7))
-		vpmulld xmm0, xmm0, xmm0 ; Gy * Gy
+		vphaddd xmm0, xmm0, xmm5 ; add horizontal pairs to get Gx and Gy
+		vpmulld xmm0, xmm0, xmm0 ; Gx * Gx, Gy * Gy
 		vphaddd xmm0, xmm0, xmm5 ; G^2 = Gx^2 + Gy^2
 
 		vmovq rax, xmm0
