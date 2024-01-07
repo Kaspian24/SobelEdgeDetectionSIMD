@@ -132,12 +132,12 @@ l2:
 									; => xmm0(low) = x0+x1, x2+x3, x4+x5, x6+x7, xmm0(high) = y0+y1, y2+y3, y4+y5, y6+y7
 									; => byte to word
 		vphaddw xmm0, xmm0, xmm5 ; add horizontal pairs
-		vpmovsxwd xmm0, xmm0 ; word to double word
-		vphaddd xmm0, xmm0, xmm5 ; add horizontal pairs to get Gx and Gy
-		vpmulld xmm0, xmm0, xmm0 ; Gx * Gx, Gy * Gy
-		vphaddd xmm0, xmm0, xmm5 ; G^2 = Gx^2 + Gy^2
+		vphaddw xmm0, xmm0, xmm5 ; add horizontal pairs to get Gx and Gy
+		vpmaddwd xmm0, xmm0, xmm0 ; Gx * Gx, Gy * Gy
+								  ; => word to double word
+								  ; => G^2 = Gx^2 + Gy^2
 
-		vmovq rax, xmm0
+		vmovd eax, xmm0
 		cmp eax, ecx ; compare G^2 with detectionLevel
 		jl end_edge
 
