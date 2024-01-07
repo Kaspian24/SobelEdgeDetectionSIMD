@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /JaZespol3WinForms/resources/town.bmp
+/JaZespol3WinForms/resources/autumn.bmp
+/JaZespol3WinForms/resources/nasa.bmp

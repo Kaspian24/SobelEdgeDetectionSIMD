@@ -23,9 +23,10 @@ push rdx ; save grayValues on stack for later use
 ; stack moved by 8*7
 
 ; initialize SSE registers
-vmovdqa xmm5, xmmword ptr [ShuffleRGB]
-vmovdqa xmm4, xmmword ptr [MaskRGB]
-vmovdqa xmm3, xmmword ptr [DivideByThree]
+vpxor xmm5, xmm5, xmm5
+vmovdqa xmm4, xmmword ptr [ShuffleRGB]
+vmovdqa xmm3, xmmword ptr [MaskRGB]
+vmovdqa xmm2, xmmword ptr [DivideByThree]
 
 mov r12, rcx ; r12 = rgbValues
 mov r13, rdx ; r13 = grayValues
@@ -46,15 +47,15 @@ l1:
 		cmp r15, 6 ; prevent overriding next line and reading memory outside of the array at last line
 		jl l1_0_end
 		vmovdqu xmm0, xmmword ptr [r12]
-		vpshufb xmm0, xmm0, xmm5 ; shuffle bytes to 4 groups of R, G, B, Placeholder
-		vpmaddubsw xmm0, xmm0, xmm4 ; R*1, G*1, B*1, Placeholder * 0
+		vpshufb xmm0, xmm0, xmm4 ; shuffle bytes to 4 groups of R, G, B, Placeholder
+		vpmaddubsw xmm0, xmm0, xmm3 ; R*1, G*1, B*1, Placeholder * 0
 									; => R+G, B+0
 									; => byte to word
 		vphaddw xmm0, xmm0, xmm5 ; R+G+B+0
 		vpmovzxwd xmm0, xmm0 ; word to double word
 		vcvtdq2ps xmm0, xmm0 ; double word to single precision (no instruction for dividing integers)
 
-		vdivps xmm0, xmm0, xmm3 ; (R+G+B)/3
+		vdivps xmm0, xmm0, xmm2 ; (R+G+B)/3
 
 		vcvttps2dq xmm0, xmm0 ; single precision to double word, rounded down
 
@@ -98,7 +99,6 @@ l1:
 	jnz l1
 
 ; initialize SSE registers
-vpxor xmm5, xmm5, xmm15
 vmovdqa xmm4, xmmword ptr [ShuffleMatrixA]
 vmovdqa xmm3, xmmword ptr [MatrixXandY]
 
