@@ -49,7 +49,7 @@ namespace JaZespol3WinForms
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
 
             // Create helper array
-            byte[] grayValues = new byte[result.Width * result.Height * 3];
+            byte[] grayValues = new byte[result.Width * result.Height];
 
             string method = "Cpp";
             System.Diagnostics.Stopwatch watch;
