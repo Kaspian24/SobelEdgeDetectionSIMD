@@ -48,9 +48,9 @@ l1:
 		jl l1_0_end
 		vmovdqu xmm0, xmmword ptr [r12]
 		vpshufb xmm0, xmm0, xmm4 ; shuffle bytes to 4 groups of R, G, B, Placeholder
-		vpmaddubsw xmm0, xmm0, xmm3 ; R*1, G*1, B*1, Placeholder * 0
+		vpmaddubsw xmm0, xmm0, xmm3 ; byte to word
+									; => R*1, G*1, B*1, Placeholder * 0
 									; => R+G, B+0
-									; => byte to word
 		vphaddw xmm0, xmm0, xmm5 ; R+G+B+0
 		vpmovzxwd xmm0, xmm0 ; word to double word
 		vcvtdq2ps xmm0, xmm0 ; double word to single precision (no instruction for dividing integers)
@@ -128,13 +128,13 @@ l2:
 		vpinsrd xmm0, xmm0, dword ptr [r13+2*r10-1], 2
 		vpshufb xmm0, xmm0, xmm4 ; place 8 bytes in correct order and copy them to upper part of register
 
-		vpmaddubsw xmm0, xmm0, xmm3 ; xmm0(low) = MatrixA * MatrixX, xmm0(high) = MatrixA * MatrixY
+		vpmaddubsw xmm0, xmm0, xmm3 ; byte to word
+									; => xmm0(low) = MatrixA * MatrixX, xmm0(high) = MatrixA * MatrixY
 									; => xmm0(low) = x0+x1, x2+x3, x4+x5, x6+x7, xmm0(high) = y0+y1, y2+y3, y4+y5, y6+y7
-									; => byte to word
 		vphaddw xmm0, xmm0, xmm5 ; add horizontal pairs
 		vphaddw xmm0, xmm0, xmm5 ; add horizontal pairs to get Gx and Gy
-		vpmaddwd xmm0, xmm0, xmm0 ; Gx * Gx, Gy * Gy
-								  ; => word to double word
+		vpmaddwd xmm0, xmm0, xmm0 ; word to double word
+								  ; => Gx * Gx, Gy * Gy
 								  ; => G^2 = Gx^2 + Gy^2
 
 		vmovd eax, xmm0
